@@ -262,6 +262,7 @@ void IgnitionROS2ControlPlugin::Configure(
 
   // Get params from SDF
   std::string paramFileName = _sdf->Get<std::string>("parameters");
+  std::string ns = "";
 
   if (paramFileName.empty()) {
     RCLCPP_ERROR(
@@ -287,7 +288,7 @@ void IgnitionROS2ControlPlugin::Configure(
 
     // Set namespace if tag is present
     if (sdfRos->HasElement("namespace")) {
-      std::string ns = sdfRos->GetElement("namespace")->Get<std::string>();
+      ns = sdfRos->GetElement("namespace")->Get<std::string>();
       // prevent exception: namespace must be absolute, it must lead with a '/'
       if (ns.empty() || ns[0] != '/') {
         ns = '/' + ns;
@@ -318,12 +319,14 @@ void IgnitionROS2ControlPlugin::Configure(
 
   if (!rclcpp::ok()) {
     rclcpp::init(static_cast<int>(argv.size()), argv.data());
-    std::string node_name = "ignition_ros_control";
-    if (!controllerManagerPrefixNodeName.empty()) {
-      node_name = controllerManagerPrefixNodeName + "_" + node_name;
-    }
-    this->dataPtr->node_ = rclcpp::Node::make_shared(node_name);
   }
+
+  std::string node_name = "ignition_ros_control";
+  if (!controllerManagerPrefixNodeName.empty()) {
+    node_name = controllerManagerPrefixNodeName + "_" + node_name;
+  }
+
+  this->dataPtr->node_ = rclcpp::Node::make_shared(node_name, ns);
   this->dataPtr->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
   this->dataPtr->executor_->add_node(this->dataPtr->node_);
   this->dataPtr->stop_ = false;
@@ -406,7 +409,8 @@ void IgnitionROS2ControlPlugin::Configure(
     new controller_manager::ControllerManager(
       std::move(resource_manager_),
       this->dataPtr->executor_,
-      controllerManagerNodeName));
+      controllerManagerNodeName,
+      this->dataPtr->node_->get_namespace()));
   this->dataPtr->executor_->add_node(this->dataPtr->controller_manager_);
 
   if (!this->dataPtr->controller_manager_->has_parameter("update_rate")) {
