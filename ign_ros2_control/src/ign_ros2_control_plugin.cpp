@@ -297,9 +297,9 @@ void IgnitionROS2ControlPlugin::Configure(
       if (ns.length() > 1) {
         this->dataPtr->robot_description_node_ = ns + '/' + this->dataPtr->robot_description_node_;
       }
-      std::string ns_arg = std::string("__ns:=") + ns;
-      arguments.push_back(RCL_REMAP_FLAG);
-      arguments.push_back(ns_arg);
+      // std::string ns_arg = std::string("__ns:=") + ns;
+      // arguments.push_back(RCL_REMAP_FLAG);
+      // arguments.push_back(ns_arg);
     }
 
     // Get list of remapping rules from SDF
@@ -335,7 +335,6 @@ void IgnitionROS2ControlPlugin::Configure(
   this->dataPtr->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
   this->dataPtr->executor_->add_node(this->dataPtr->node_);
   this->dataPtr->stop_ = false;
-  RCLCPP_INFO(this->dataPtr->node_->get_logger(), "####################### DEBUG");
   auto spin = [this]()
     {
       while (rclcpp::ok() && !this->dataPtr->stop_) {
