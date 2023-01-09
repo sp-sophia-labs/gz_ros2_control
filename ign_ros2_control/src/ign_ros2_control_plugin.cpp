@@ -273,12 +273,6 @@ void IgnitionROS2ControlPlugin::Configure(
   // Get controller manager node name
   std::string controllerManagerNodeName{"controller_manager"};
 
-  std::string controllerManagerPrefixNodeName =
-    _sdf->Get<std::string>("controller_manager_prefix_node_name");
-  if (!controllerManagerPrefixNodeName.empty()) {
-    controllerManagerNodeName = controllerManagerPrefixNodeName + "_" + controllerManagerNodeName;
-  }
-
   std::vector<std::string> arguments = {"--ros-args", "--params-file", paramFileName};
   auto sdfPtr = const_cast<sdf::Element *>(_sdf.get());
   std::string ns = "/";
@@ -297,9 +291,6 @@ void IgnitionROS2ControlPlugin::Configure(
       if (ns.length() > 1) {
         this->dataPtr->robot_description_node_ = ns + '/' + this->dataPtr->robot_description_node_;
       }
-      // std::string ns_arg = std::string("__ns:=") + ns;
-      // arguments.push_back(RCL_REMAP_FLAG);
-      // arguments.push_back(ns_arg);
     }
 
     // Get list of remapping rules from SDF
@@ -327,9 +318,6 @@ void IgnitionROS2ControlPlugin::Configure(
   }
 
   std::string node_name = "ignition_ros_control";
-  if (!controllerManagerPrefixNodeName.empty()) {
-    node_name = controllerManagerPrefixNodeName + "_" + node_name;
-  }
 
   this->dataPtr->node_ = rclcpp::Node::make_shared(node_name, ns);
   this->dataPtr->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
